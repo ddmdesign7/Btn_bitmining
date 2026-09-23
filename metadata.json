@@ -1,0 +1,8 @@
+{
+  "name": "BitTradeConnect Client Dashboard",
+  "description": "Client profile dashboard for trading account balance monitoring, portfolio overview, and withdrawal management.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

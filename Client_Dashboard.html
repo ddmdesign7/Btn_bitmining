@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050b14">
+<title>BitTradeConnect Client Dashboard</title>
+<meta name="description" content="Client profile dashboard for trading account balance monitoring, portfolio overview, and withdrawal management.">
+<meta property="og:title" content="BitTradeConnect Client Dashboard">
+<meta property="og:description" content="Client profile dashboard for trading account balance monitoring, portfolio overview, and withdrawal management.">
+<style>
+  :root{
+    --bg:#050b14;
+    --card:#0b1424;
+    --card2:#0a1220;
+    --line:#18263a;
+    --line-green:#006b61;
+    --text:#f4f7fb;
+    --muted:#8fa3c0;
+    --green:#00d49a;
+    --green2:#00b982;
+    --blue:#19b8ff;
+    --button:#17263d;
+    --shadow:0 14px 45px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  body{overflow-x:hidden}
+  button{font:inherit}
+  .app{width:100%;max-width:1180px;margin:auto;padding:18px 20px 48px}
+  .demo-notice{
+    margin:0 0 14px;padding:9px 14px;border:1px solid #28415d;border-radius:12px;
+    background:#0b1626;color:#91a9c8;text-align:center;font-size:12px;letter-spacing:.04em
+  }
+
+  /* Ticker */
+  .ticker{
+    height:82px;border:1px solid #12304a;border-radius:22px;background:#070f1b;
+    display:flex;align-items:center;gap:42px;padding:0 14px;overflow:hidden;
+    box-shadow:var(--shadow)
+  }
+  .live{
+    flex:0 0 auto;padding:12px 25px;border-radius:12px;border:1px solid #006f62;
+    background:#06251f;color:var(--green);font-size:20px;font-weight:800;
+  }
+  .ticker-track{display:flex;align-items:center;justify-content:space-around;gap:80px;min-width:0;width:100%}
+  .coin{font-size:25px;font-weight:800;white-space:nowrap}
+  .coin span{margin-left:14px;font-weight:700}
+  .up{color:var(--green)}
+
+  /* Hero */
+  .hero{
+    margin-top:22px;padding:34px 32px 36px;border-radius:28px;
+    border:1px solid #00615b;
+    background:
+      radial-gradient(circle at 88% 45%,rgba(0,212,154,.09),transparent 35%),
+      linear-gradient(135deg,#091421,#061e24);
+    box-shadow:var(--shadow)
+  }
+  h1{margin:0 0 22px;font-size:clamp(30px,4vw,50px);line-height:1.08;letter-spacing:-1.8px}
+  .badge{display:inline-block;border:1px solid #008b76;background:#062a26;color:var(--green);border-radius:999px;padding:8px 18px;font-weight:750;font-size:16px;margin-bottom:14px}
+  .profile{font-size:20px;line-height:1.75;color:var(--muted)}
+  .profile strong{color:#e9eef7;font-weight:600}
+  .available strong{color:var(--green)}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:25px}
+  .action{
+    border:1px solid #24577a;border-radius:25px;min-height:78px;cursor:pointer;
+    background:linear-gradient(180deg,#172b48,#12223a);color:#f5f7fb;
+    font-size:23px;font-weight:800;transition:.18s transform,.18s filter
+  }
+  .action:hover{transform:translateY(-2px);filter:brightness(1.08)}
+  .buy{background:linear-gradient(180deg,#05d99d,#00b982);border-color:#00d49a;color:#02140f}
+  .arrow{font-size:30px;margin-right:12px}
+
+  /* Cards */
+  .cards{display:grid;gap:22px;margin-top:40px}
+  .card{
+    border:1px solid var(--line);border-radius:28px;background:var(--card);
+    padding:36px 34px;box-shadow:var(--shadow);position:relative;overflow:hidden
+  }
+  .card.green-border{border-color:#006b61}
+  .label{color:#9bb0cf;font-size:21px;letter-spacing:.02em}
+  .value{font-size:clamp(42px,6vw,66px);font-weight:850;letter-spacing:-2px;margin-top:24px}
+  .sub{font-size:22px;color:#9bb0cf;margin-top:5px}
+  .divider{height:1px;background:#17253a;margin:38px 0 28px}
+  .change{display:inline-flex;align-items:center;gap:8px;border:1px solid #007965;background:#062a26;color:var(--green);border-radius:12px;padding:8px 15px;font-size:19px;font-weight:800}
+  .change-text{font-size:21px;color:#94a8c5;margin-left:12px}
+  .icon{
+    position:absolute;right:30px;top:30px;width:72px;height:72px;border-radius:23px;
+    border:1px solid #264360;background:#122238;display:grid;place-items:center;
+    color:var(--green);font-size:40px
+  }
+  .icon.blue{color:var(--blue)}
+  .footer-row{display:flex;justify-content:space-between;align-items:center;gap:20px}
+  .withdraw{
+    border:0;background:transparent;color:var(--green);font-size:23px;font-weight:800;
+    cursor:pointer;padding:8px 0
+  }
+  .withdraw:hover{text-decoration:underline}
+
+  .modal-handle{
+    width:104px;height:7px;border-radius:99px;background:#334863;margin:0 auto 25px
+  }
+  .modal-subtitle{margin:6px 0 0;color:#8fa3c0;font-size:15px}
+  .authorization-modal{max-height:92vh;overflow:auto}
+  .notice-card{
+    display:grid;grid-template-columns:72px 1fr;gap:18px;align-items:start;
+    margin:22px 0;padding:25px;border:1px solid #7b5710;border-radius:25px;
+    background:linear-gradient(135deg,#211e1a,#211d19)
+  }
+  .notice-icon{
+    width:62px;height:62px;border-radius:17px;display:grid;place-items:center;
+    background:#4b3515;color:#ffbd12;font-size:31px;font-weight:900
+  }
+  .notice-title{color:#ffc51b;font-size:20px;font-weight:850;letter-spacing:.03em}
+  .notice-text{margin-top:10px;color:#eef2f7;font-size:17px;line-height:1.5;font-weight:650}
+  .account-card,.terms-card{
+    border:1px solid #1c3049;border-radius:23px;background:#0c1628;padding:8px 20px
+  }
+  .account-row{
+    display:flex;justify-content:space-between;gap:20px;align-items:center;
+    padding:18px 0;border-bottom:1px solid #1b2b40;color:#91a5c2;font-size:16px
+  }
+  .account-row strong{text-align:right;color:#eef2f7;font-weight:700}
+  .account-row.last{border-bottom:0}
+  .green-text{color:var(--green)!important}
+  .status-text{color:#f4c342!important}
+  .terms-card{margin-top:18px;padding:20px}
+  .terms-title{font-size:18px;font-weight:800;color:#e9eef7;display:flex;align-items:center;gap:10px}
+  .terms-icon{color:var(--green);font-size:23px}
+  .terms-card p{color:#8fa3c0;font-size:15px;line-height:1.65;margin:12px 0 0}
+  
+  /* Modal */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);
+    display:none;align-items:center;justify-content:center;padding:18px;z-index:50
+  }
+  .modal-backdrop.show{display:flex}
+  .modal{
+    width:min(100%,520px);border:1px solid #17665e;border-radius:26px;
+    background:linear-gradient(145deg,#0b1728,#07111e);box-shadow:0 30px 100px rgba(0,0,0,.55);
+    padding:28px;animation:pop .18s ease-out
+  }
+  @keyframes pop{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+  .modal-head{display:flex;justify-content:space-between;gap:15px;align-items:center}
+  .modal h2{margin:0;font-size:27px}
+  .close{width:42px;height:42px;border:1px solid #29405c;background:#122238;color:#a9b9cf;border-radius:12px;cursor:pointer;font-size:22px}
+  .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+  .modal-actions button{height:52px;border-radius:13px;border:1px solid #29405b;cursor:pointer;font-weight:800}
+  .cancel{background:#132238;color:#e9eef7}
+  .continue{background:var(--green);color:#03130f;border-color:var(--green)!important}
+  .message{display:none;margin-top:16px;padding:13px;border-radius:12px;background:#062a26;color:var(--green);border:1px solid #007965;font-size:14px}
+
+  /* Non-intrusive Toast Notification */
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+    background:#0c1d32;border:1px solid #24577a;color:#f5f7fb;padding:14px 24px;
+    border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.5);font-size:15px;
+    font-weight:600;z-index:9999;opacity:0;transition:transform .25s ease, opacity .25s ease;
+    pointer-events:none;display:flex;align-items:center;gap:10px
+  }
+  .toast.show{
+    transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto
+  }
+  .toast-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+
+  @media(max-width:720px){
+    .app{padding:10px 0 35px}
+    .demo-notice{margin:0 10px 10px}
+    .ticker{border-radius:0;height:68px;padding:0 12px;gap:12px;border-left:0;border-right:0}
+    .live{padding:9px 17px;font-size:17px}
+    .ticker-track{gap:38px;justify-content:flex-start;overflow:auto}
+    .coin{font-size:18px}
+    .coin span{margin-left:7px}
+    .hero{margin-top:14px;border-radius:0;padding:29px 18px 30px}
+    h1{font-size:34px;letter-spacing:-1px}
+    .profile{font-size:18px;line-height:1.7}
+    .actions{gap:10px}
+    .action{min-height:68px;border-radius:20px;font-size:18px}
+    .arrow{font-size:23px;margin-right:6px}
+    .cards{margin-top:14px;gap:14px}
+    .card{border-radius:0;padding:30px 26px;min-height:300px}
+    .label{font-size:18px}
+    .value{font-size:48px;margin-top:24px}
+    .sub{font-size:18px}
+    .icon{right:20px;top:20px;width:62px;height:62px;font-size:34px}
+    .divider{margin:30px 0 23px}
+    .change-text{font-size:18px}
+
+    .authorization-modal{padding:22px 18px}
+    .notice-card{grid-template-columns:52px 1fr;padding:18px;gap:13px}
+    .notice-icon{width:50px;height:50px;font-size:25px}
+    .notice-title{font-size:16px}
+    .notice-text{font-size:14px}
+    .account-card{padding:5px 16px}
+    .account-row{font-size:13px;padding:15px 0}
+    .terms-card{padding:17px}
+    .terms-title{font-size:15px}
+    .terms-card p{font-size:13px}
+    .footer-row{align-items:flex-start}
+    .withdraw{font-size:19px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="ticker">
+    <div class="live">● LIVE</div>
+    <div class="ticker-track">
+      <div class="coin">BTC <span>$89,392.18</span> <span class="up">+3.41%</span></div>
+      <div class="coin">ETH <span>$3,342.95</span> <span class="up">+2.17%</span></div>
+    </div>
+  </section>
+
+  <section class="hero">
+    <h1>Good day, Joshua James Bergin</h1>
+    <div class="badge">Tier 2 Verified</div>
+    <div class="profile">
+      <div>Profile: <strong>Joshua James Bergin</strong></div>
+      <div>Email: <strong>berginjoshua1@gmail.com</strong></div>
+      <div class="available">Available: <strong>$47,986.00</strong></div>
+    </div>
+    <div class="actions">
+      <button class="action buy" type="button" onclick="demoAction('Quick Buy')"><span class="arrow">↗</span>Quick Buy</button>
+      <button class="action" type="button" onclick="demoAction('Quick Sell')"><span class="arrow">↘</span>Quick Sell</button>
+    </div>
+  </section>
+
+  <main class="cards">
+    <section class="card green-border">
+      <div class="icon">$</div>
+      <div class="label">TOTAL PORTFOLIO</div>
+      <div class="value">$111,000.04</div>
+      <div class="sub">Consolidated Net Worth</div>
+      <div class="divider"></div>
+      <div><span class="change">↗ +1.78%</span><span class="change-text">24h Change</span></div>
+    </section>
+
+    <section class="card">
+      <div class="icon blue">▣</div>
+      <div class="label">AVAILABLE BALANCE</div>
+      <div class="value">$47,986.00</div>
+      <div class="sub">Ready for instant withdrawal &amp; trading</div>
+      <div class="divider"></div>
+      <div class="footer-row">
+        <div class="sub">Real-time simulated ledger</div>
+        <button class="withdraw" type="button" onclick="openWithdraw()">Withdraw ›</button>
+      </div>
+    </section>
+
+    <section class="card green-border">
+      <div class="icon">↗</div>
+      <div class="label">TODAY'S PROFIT / LOSS</div>
+      <div class="value">+$1,971.96</div>
+      <div class="sub">Simulated 24H Unrealized</div>
+      <div class="divider"></div>
+      <div><span class="change">↗ +1.78%</span><span class="change-text">24h PnL</span></div>
+    </section>
+  </main>
+</div>
+
+<!-- Withdrawal authorization popup -->
+<div class="modal-backdrop" id="withdrawModal" role="dialog" aria-modal="true" aria-labelledby="withdrawTitle">
+  <div class="modal authorization-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div>
+        <h2 id="withdrawTitle">Withdrawal Authorization</h2>
+        <p class="modal-subtitle">Account compliance &amp; withdrawal review</p>
+      </div>
+      <button class="close" type="button" aria-label="Close" onclick="closeWithdraw()">×</button>
+    </div>
+
+    <div class="notice-card">
+      <div class="notice-icon">✓</div>
+      <div>
+        <div class="notice-title">WITHDRAWAL REVIEW REQUIRED</div>
+        <div class="notice-text">
+          Your withdrawal request requires an account review before processing.
+          No upfront clearance or release payment is required to request a withdrawal.
+        </div>
+      </div>
+    </div>
+
+    <div class="account-card">
+      <div class="account-row"><span>Account Profile</span><strong>Joshua James Bergin</strong></div>
+      <div class="account-row"><span>Registered Email</span><strong>berginjoshua1@gmail.com</strong></div>
+      <div class="account-row"><span>Available Account Balance</span><strong class="green-text">$47,986.00 USD</strong></div>
+      <div class="account-row"><span>Requested Withdrawal</span><strong id="requestedAmount">$47,986.00 USD</strong></div>
+      <div class="account-row last"><span>Processing Status</span><strong class="status-text">Review pending</strong></div>
+    </div>
+
+    <div class="terms-card">
+      <div class="terms-title"><span class="terms-icon">▤</span> Withdrawal Terms &amp; Conditions</div>
+      <p>
+        Withdrawals may be subject to identity, security, and transaction checks.
+        Any applicable charges will be clearly disclosed through the account's
+        authorized billing process. Do not send funds to a third-party wallet
+        address to unlock or release a withdrawal.
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button class="cancel" type="button" onclick="closeWithdraw()">Cancel</button>
+      <button class="continue" type="button" onclick="submitWithdrawal()">Request Review</button>
+    </div>
+    <div class="message" id="withdrawMessage"></div>
+  </div>
+</div>
+
+<!-- Toast notification element (replaces window.alert) -->
+<div id="toast" class="toast">
+  <span class="toast-dot"></span>
+  <span id="toastText">Action selected</span>
+</div>
+
+<script>
+  const modal = document.getElementById('withdrawModal');
+  const message = document.getElementById('withdrawMessage');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toastText');
+  let toastTimer = null;
+
+  function showToast(text) {
+    if (!toast) return;
+    toastText.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3200);
+  }
+
+  function openWithdraw(){
+    message.style.display='none';
+    message.textContent='';
+    modal.classList.add('show');
+  }
+
+  function closeWithdraw(){
+    modal.classList.remove('show');
+  }
+
+  function submitWithdrawal(){
+    const requested = document.getElementById('requestedAmount');
+    requested.textContent = '$47,986.00 USD';
+
+    message.textContent =
+      'Withdrawal review requested. Your request has been submitted for account verification.';
+    message.style.display='block';
+    showToast('Withdrawal review submitted successfully.');
+  }
+
+  function demoAction(name){
+    showToast(name + ' is a simulated demo action.');
+  }
+
+  modal.addEventListener('click', e => {
+    if(e.target === modal) closeWithdraw();
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') closeWithdraw();
+  });
+</script>
+</body>
+</html>
