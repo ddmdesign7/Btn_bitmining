@@ -118,6 +118,7 @@ export const App: React.FC = () => {
 
   // Dashboard state
   const [walletAddress, setWalletAddress] = useState<string>('');
+  const [walletError, setWalletError] = useState<string | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState<string>('47986');
   const [isProcessingWithdraw, setIsProcessingWithdraw] = useState<boolean>(false);
   const [showWithdrawalModal, setShowWithdrawalModal] = useState<boolean>(false);
@@ -261,9 +262,11 @@ export const App: React.FC = () => {
     e.preventDefault();
     const cleanWallet = walletAddress.trim();
     if (!cleanWallet) {
-      alert('Please enter a destination digital wallet address.');
+      setWalletError('Please enter a destination digital wallet address.');
+      walletInputRef.current?.focus();
       return;
     }
+    setWalletError(null);
 
     setIsProcessingWithdraw(true);
 
@@ -694,10 +697,23 @@ export const App: React.FC = () => {
                     className="form-input"
                     placeholder="0x71C... or bc1q... or TXYZ..."
                     value={walletAddress}
-                    onChange={(e) => setWalletAddress(e.target.value)}
+                    onChange={(e) => {
+                      setWalletAddress(e.target.value);
+                      if (walletError) setWalletError(null);
+                    }}
                     required
-                    style={{ paddingLeft: '14px', fontFamily: 'monospace', fontSize: '0.88rem' }}
+                    style={{
+                      paddingLeft: '14px',
+                      fontFamily: 'monospace',
+                      fontSize: '0.88rem',
+                      borderColor: walletError ? '#ef4444' : undefined
+                    }}
                   />
+                  {walletError && (
+                    <div style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>⚠</span> {walletError}
+                    </div>
+                  )}
                 </div>
               </div>
 
