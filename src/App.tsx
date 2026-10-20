@@ -822,7 +822,7 @@ export const App: React.FC = () => {
           </section>
 
           {/* Portfolio Statistics */}
-          <section className="stats-grid">
+          <section className="stats-grid" aria-label="Portfolio Statistics">
             <article className="stat-card accent-blue">
               <div className="stat-label">
                 <span>Total Portfolio</span>
