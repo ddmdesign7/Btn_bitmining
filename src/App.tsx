@@ -1,4 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip
+} from 'recharts';
 
 interface LedgerItem {
   date: string;
@@ -9,6 +18,171 @@ interface LedgerItem {
   status: string;
   statusColor: string;
 }
+
+interface LedgerChartPoint {
+  rawDate: string;
+  shortDate: string;
+  action: string;
+  invested: string;
+  withdrawn: string;
+  fee: string;
+  periodProfit: number;
+  cumulativeProfit: number;
+}
+
+const PROFIT_CHART_DATA: LedgerChartPoint[] = [
+  {
+    rawDate: 'Mar 8, 2019',
+    shortDate: 'Mar 19',
+    action: 'Initial Deposit',
+    invested: '$5,000.00',
+    withdrawn: '$11,750.00',
+    fee: '$1,586.00',
+    periodProfit: 5164.00,
+    cumulativeProfit: 5164.00
+  },
+  {
+    rawDate: 'Oct 29, 2019',
+    shortDate: 'Oct 19',
+    action: 'Reinvestment',
+    invested: '$4,000.00',
+    withdrawn: '$12,000.00',
+    fee: '$1,264.00',
+    periodProfit: 6736.00,
+    cumulativeProfit: 11900.00
+  },
+  {
+    rawDate: 'Jan 6, 2020',
+    shortDate: 'Jan 20',
+    action: 'Deposit',
+    invested: '$500.00',
+    withdrawn: '$2,000.00',
+    fee: '$300.00',
+    periodProfit: 1200.00,
+    cumulativeProfit: 13100.00
+  },
+  {
+    rawDate: 'Jul 14, 2020',
+    shortDate: 'Jul 20',
+    action: 'Deposit',
+    invested: '$7,000.00',
+    withdrawn: '$16,000.00',
+    fee: '$2,000.00',
+    periodProfit: 7000.00,
+    cumulativeProfit: 20100.00
+  },
+  {
+    rawDate: 'Feb 10, 2021',
+    shortDate: 'Feb 21',
+    action: 'Deposit',
+    invested: '$1,000.00',
+    withdrawn: '$4,000.00',
+    fee: '$700.00',
+    periodProfit: 2300.00,
+    cumulativeProfit: 22400.00
+  },
+  {
+    rawDate: 'Sep 20, 2021',
+    shortDate: 'Sep 21',
+    action: 'Deposit',
+    invested: '$10,000.00',
+    withdrawn: '$31,000.00',
+    fee: '$3,900.00',
+    periodProfit: 17100.00,
+    cumulativeProfit: 39500.00
+  },
+  {
+    rawDate: 'Jan 5, 2022',
+    shortDate: 'Jan 22',
+    action: 'Deposit',
+    invested: '$6,000.00',
+    withdrawn: '$14,000.00',
+    fee: '$1,800.00',
+    periodProfit: 6200.00,
+    cumulativeProfit: 45700.00
+  },
+  {
+    rawDate: 'Apr 12 / Jul 7, 2022',
+    shortDate: 'Jul 22',
+    action: 'Reinvested Yield',
+    invested: '$4,000.00',
+    withdrawn: 'Reinvested ($16,000)',
+    fee: '-',
+    periodProfit: 12000.00,
+    cumulativeProfit: 57700.00
+  }
+];
+
+const CustomChartTooltip: React.FC<any> = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const item: LedgerChartPoint = payload[0].payload;
+    return (
+      <div
+        style={{
+          background: '#0a1424',
+          border: '1px solid rgba(255, 255, 255, 0.16)',
+          borderRadius: '10px',
+          padding: '12px 16px',
+          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.75)',
+          minWidth: '230px',
+          fontFamily: 'inherit'
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '8px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            paddingBottom: '6px'
+          }}
+        >
+          <span style={{ fontWeight: 700, fontSize: '0.86rem', color: '#f8fafc' }}>{item.rawDate}</span>
+          <span
+            style={{
+              fontSize: '0.72rem',
+              color: item.action === 'Reinvested Yield' ? '#a78bfa' : '#60a5fa',
+              background: 'rgba(59, 130, 246, 0.14)',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              fontWeight: 600
+            }}
+          >
+            {item.action}
+          </span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.82rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>Cumulative Profit:</span>
+            <span style={{ color: '#10b981', fontWeight: 800 }}>
+              +${item.cumulativeProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>Cycle Net Profit:</span>
+            <span style={{ color: '#38bdf8', fontWeight: 700 }}>
+              +${item.periodProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>Invested:</span>
+            <span style={{ color: '#cbd5e1' }}>{item.invested}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>Withdrawn Gross:</span>
+            <span style={{ color: '#cbd5e1' }}>{item.withdrawn}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: '#94a3b8' }}>Cycle Fee:</span>
+            <span style={{ color: item.fee === '-' ? '#64748b' : '#fca5a5' }}>{item.fee}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 const HISTORY_DATA: LedgerItem[] = [
   {
@@ -120,6 +294,7 @@ export const App: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [walletError, setWalletError] = useState<string | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState<string>('47986');
+  const [amountError, setAmountError] = useState<string | null>(null);
   const [isProcessingWithdraw, setIsProcessingWithdraw] = useState<boolean>(false);
   const [showWithdrawalModal, setShowWithdrawalModal] = useState<boolean>(false);
   const [modalRequestedAmount, setModalRequestedAmount] = useState<string>('$47,986.00');
@@ -128,22 +303,37 @@ export const App: React.FC = () => {
   // Simulation modal state
   const [showSimulationModal, setShowSimulationModal] = useState<boolean>(false);
 
+  // Chart view mode: 'cumulative' | 'cycle' | 'both'
+  const [chartViewMode, setChartViewMode] = useState<'cumulative' | 'cycle' | 'both'>('cumulative');
+
   const directWithdrawSectionRef = useRef<HTMLElement>(null);
   const walletInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync route on hash change
+  // Sync route on hash change with authentication route guards
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
       if (hash === 'dashboard') {
+        if (!isAuthenticated) {
+          window.location.replace('#login');
+          return;
+        }
         setCurrentRoute('dashboard');
-        document.title = 'bit Trade net - Client Dashboard';
+        document.title = 'BitTradeConnect - Client Dashboard';
       } else if (hash === 'withdraw' || hash === 'paytowithdraw') {
+        if (!isAuthenticated) {
+          window.location.replace('#login');
+          return;
+        }
         setCurrentRoute('withdraw');
-        document.title = 'bit Trade net - Withdrawal Authorization';
+        document.title = 'BitTradeConnect - Withdrawal Authorization';
       } else {
+        if (isAuthenticated) {
+          window.location.replace('#dashboard');
+          return;
+        }
         setCurrentRoute('login');
-        document.title = 'bit Trade net - Secure Portal Login';
+        document.title = 'BitTradeConnect - Secure Portal Login';
         if (window.location.hash !== '#login') {
           history.replaceState(null, '', '#login');
         }
@@ -167,10 +357,13 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [isAuthenticated]);
 
-  // Keyboard shortcut Alt+A to autofill
+  // Keyboard shortcuts (Escape to close modals, Alt+A to autofill credentials)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l'))) {
+      if (e.key === 'Escape') {
+        setShowWithdrawalModal(false);
+        setShowSimulationModal(false);
+      } else if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l'))) {
         e.preventDefault();
         autofillCredentials();
       }
@@ -268,15 +461,27 @@ export const App: React.FC = () => {
     }
     setWalletError(null);
 
+    const parsedAmount = parseFloat(withdrawAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setAmountError('Please enter a valid withdrawal amount.');
+      return;
+    }
+    if (parsedAmount < 10) {
+      setAmountError('Minimum withdrawal amount is $10.00.');
+      return;
+    }
+    if (parsedAmount > 47986) {
+      setAmountError('Requested amount exceeds available balance ($47,986.00).');
+      return;
+    }
+    setAmountError(null);
+
     setIsProcessingWithdraw(true);
 
     setTimeout(() => {
       setIsProcessingWithdraw(false);
-      const parsedAmount = parseFloat(withdrawAmount);
       setModalRequestedAmount(
-        isNaN(parsedAmount)
-          ? '$47,986.00'
-          : `$${parsedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        `$${parsedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       );
       setModalTargetWallet(cleanWallet);
       setShowWithdrawalModal(true);
@@ -687,11 +892,12 @@ export const App: React.FC = () => {
 
             <form onSubmit={handleDirectWithdrawSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', alignItems: 'flex-end' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>
+                <label htmlFor="wallet-address" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '6px' }}>
                   Destination Wallet Address (BTC / ETH / USDT)
                 </label>
                 <div style={{ position: 'relative' }}>
                   <input
+                    id="wallet-address"
                     ref={walletInputRef}
                     type="text"
                     className="form-input"
@@ -719,28 +925,46 @@ export const App: React.FC = () => {
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#cbd5e1' }}>
+                  <label htmlFor="withdraw-amount" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#cbd5e1' }}>
                     Withdrawal Amount ($ USD)
                   </label>
                   <button
                     type="button"
-                    onClick={() => setWithdrawAmount('47986')}
+                    onClick={() => {
+                      setWithdrawAmount('47986');
+                      if (amountError) setAmountError(null);
+                    }}
                     style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.76rem', fontWeight: 800, cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     MAX ($47,986.00)
                   </button>
                 </div>
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="Enter amount (e.g. 47986)"
-                  min="10"
-                  max="47986"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  required
-                  style={{ paddingLeft: '14px' }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="withdraw-amount"
+                    type="number"
+                    className="form-input"
+                    placeholder="Enter amount (e.g. 47986)"
+                    min="10"
+                    max="47986"
+                    step="any"
+                    value={withdrawAmount}
+                    onChange={(e) => {
+                      setWithdrawAmount(e.target.value);
+                      if (amountError) setAmountError(null);
+                    }}
+                    required
+                    style={{
+                      paddingLeft: '14px',
+                      borderColor: amountError ? '#ef4444' : undefined
+                    }}
+                  />
+                  {amountError && (
+                    <div style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>⚠</span> {amountError}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -765,6 +989,236 @@ export const App: React.FC = () => {
                 </button>
               </div>
             </form>
+          </section>
+
+          {/* Historical Profit Growth Section (Recharts Line Chart) */}
+          <section
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '24px',
+              boxShadow: 'var(--shadow)',
+              marginBottom: '28px'
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                gap: '16px',
+                marginBottom: '18px'
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.74rem',
+                    fontWeight: 800,
+                    color: 'var(--green)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    marginBottom: '4px'
+                  }}
+                >
+                  <span className="pulse-dot" /> LEDGER PERFORMANCE ANALYTICS
+                </div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 850, letterSpacing: '-0.02em' }}>
+                  Historical Profit Growth
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                  Visualizing compounding net returns from Ledger History records (2019 – 2022)
+                </p>
+              </div>
+
+              {/* View Mode Toggle */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  background: 'var(--bg-card-alt)',
+                  padding: '3px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)'
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setChartViewMode('cumulative')}
+                  style={{
+                    background: chartViewMode === 'cumulative' ? 'var(--green)' : 'transparent',
+                    color: chartViewMode === 'cumulative' ? '#050b14' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  Cumulative Growth
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartViewMode('cycle')}
+                  style={{
+                    background: chartViewMode === 'cycle' ? '#3b82f6' : 'transparent',
+                    color: chartViewMode === 'cycle' ? '#ffffff' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  Cycle Net Yield
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartViewMode('both')}
+                  style={{
+                    background: chartViewMode === 'both' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                    color: chartViewMode === 'both' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  Compare Both
+                </button>
+              </div>
+            </div>
+
+            {/* Quick KPI stats bar */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                gap: '12px',
+                marginBottom: '20px',
+                background: 'rgba(5, 11, 20, 0.55)',
+                padding: '14px 18px',
+                borderRadius: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.05)'
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
+                  Total Realized Profit
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 850, color: 'var(--green)', marginTop: '2px' }}>
+                  +$57,700.00
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
+                  Initial Seed Capital
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f8fafc', marginTop: '2px' }}>
+                  $5,000.00
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
+                  Historical Net ROI
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 850, color: '#60a5fa', marginTop: '2px' }}>
+                  +1,154.0%
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
+                  Average Yield / Cycle
+                </div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f59e0b', marginTop: '2px' }}>
+                  +$7,212.50
+                </div>
+              </div>
+            </div>
+
+            {/* Recharts Line Chart Container */}
+            <div style={{ width: '100%', height: 320, minHeight: 320 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={PROFIT_CHART_DATA} margin={{ top: 15, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.07)" vertical={false} />
+                  <XAxis
+                    dataKey="shortDate"
+                    stroke="#64748b"
+                    tick={{ fill: '#94a3b8', fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={{ stroke: 'rgba(255, 255, 255, 0.12)' }}
+                  />
+                  <YAxis
+                    stroke="#64748b"
+                    tick={{ fill: '#94a3b8', fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={{ stroke: 'rgba(255, 255, 255, 0.12)' }}
+                    tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+                  />
+                  <Tooltip content={<CustomChartTooltip />} />
+                  {(chartViewMode === 'cumulative' || chartViewMode === 'both') && (
+                    <Line
+                      type="monotone"
+                      dataKey="cumulativeProfit"
+                      name="Cumulative Profit Growth"
+                      stroke="#10b981"
+                      strokeWidth={3}
+                      dot={{ r: 4.5, fill: '#050b14', stroke: '#10b981', strokeWidth: 2 }}
+                      activeDot={{ r: 7, fill: '#10b981', stroke: '#ffffff', strokeWidth: 2 }}
+                    />
+                  )}
+                  {(chartViewMode === 'cycle' || chartViewMode === 'both') && (
+                    <Line
+                      type="monotone"
+                      dataKey="periodProfit"
+                      name="Cycle Net Yield"
+                      stroke="#38bdf8"
+                      strokeWidth={chartViewMode === 'both' ? 2 : 3}
+                      strokeDasharray={chartViewMode === 'both' ? '4 4' : undefined}
+                      dot={{ r: 4, fill: '#050b14', stroke: '#38bdf8', strokeWidth: 2 }}
+                      activeDot={{ r: 6.5, fill: '#38bdf8', stroke: '#ffffff', strokeWidth: 2 }}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Legend footnote indicator */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: '16px',
+                marginTop: '12px',
+                fontSize: '0.78rem',
+                color: 'var(--text-muted)'
+              }}
+            >
+              {(chartViewMode === 'cumulative' || chartViewMode === 'both') && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '12px', height: '3px', background: '#10b981', borderRadius: '2px', display: 'inline-block' }} />
+                  <span style={{ color: '#cbd5e1' }}>Cumulative Profit Growth</span>
+                </div>
+              )}
+              {(chartViewMode === 'cycle' || chartViewMode === 'both') && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '12px', height: '3px', background: '#38bdf8', borderRadius: '2px', display: 'inline-block' }} />
+                  <span style={{ color: '#cbd5e1' }}>Cycle Net Yield</span>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Historical Ledger Section */}
@@ -1011,7 +1465,15 @@ export const App: React.FC = () => {
 
       {/* Simulation Feedback Modal */}
       {showSimulationModal && (
-        <div className="modal-overlay" style={{ display: 'flex' }} role="dialog" aria-modal="true">
+        <div
+          className="modal-overlay"
+          style={{ display: 'flex' }}
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowSimulationModal(false);
+          }}
+        >
           <div className="simulation-modal">
             <span className="modal-badge">Simulation Mode Only</span>
             <h3>Clearance Fee Simulation Completed</h3>
